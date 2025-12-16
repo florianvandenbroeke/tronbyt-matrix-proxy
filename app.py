@@ -1,3 +1,4 @@
+import os
 from flask import Flask, Response
 import requests
 from PIL import Image
@@ -21,14 +22,8 @@ def matrix():
             rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
             buf += struct.pack(">H", rgb565)
 
-    return Response(
-        buf,
-        mimetype="application/octet-stream",
-        headers={
-            "Cache-Control": "no-store",
-            "Content-Length": str(len(buf))
-        }
-    )
+    return Response(buf, mimetype="application/octet-stream")
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000)
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host="0.0.0.0", port=port)
