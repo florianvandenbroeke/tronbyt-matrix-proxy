@@ -7,7 +7,7 @@ import struct
 
 app = Flask(__name__)
 
-TRONBYT_URL = "https://tronbyt-server-biwe.onrender.com/08f90fd9/next"
+TRONBYT_URL = "https://tronbyt-server-biwe.onrender.com/b55b0077/next"
 
 @app.route("/matrix")
 def matrix():
