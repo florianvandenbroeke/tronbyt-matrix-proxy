@@ -7,7 +7,7 @@ import io
 import logging
 
 # === CONFIG ===
-FRAME_URL = "https://tronbyt-server-biwe.onrender.com/b55b0077/next"
+FRAME_URL = "https://tronbyt-server-biwe.onrender.com/19cedf89/next"
 FRAME_WIDTH = 64
 FRAME_HEIGHT = 32
 FRAME_INTERVAL = 1.0  # seconden tussen frames
