@@ -1,35 +1,36 @@
-import os
-from flask import Flask, Response
-import requests
-from PIL import Image
-import io
-import struct
+import asyncio
+import aiohttp
+from fastapi import FastAPI, WebSocket
+from fastapi.responses import PlainTextResponse
 
-app = Flask(__name__)
+# === CONFIG ===
+FRAME_URL = "https://tronbyt-server-biwe.onrender.com/b55b0077/next"
+FRAME_SIZE = 64 * 32 * 2  # 4096 bytes
+FRAME_INTERVAL = 5       # seconden
 
-TRONBYT_URL = "https://tronbyt-server-biwe.onrender.com/b55b0077/next"
+app = FastAPI()
 
-@app.route("/matrix")
-def matrix():
-    try:
-        r = requests.get(TRONBYT_URL, timeout=5)
-        r.raise_for_status()
-        img = Image.open(io.BytesIO(r.content)).convert("RGB")
-        img = img.resize((64, 32), Image.BILINEAR)
+@app.get("/")
+async def root():
+    return PlainTextResponse("tronbyt matrix proxy running")
 
-        buf = bytearray()
-        for y in range(32):
-            for x in range(64):
-                r_, g, b = img.getpixel((x, y))
-                rgb565 = ((r_ & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
-                buf += struct.pack(">H", rgb565)
+@app.websocket("/ws")
+async def ws_matrix(websocket: WebSocket):
+    await websocket.accept()
+    print("ESP32 connected")
 
-        # Converteer naar bytes voor Response
-        return Response(bytes(buf), mimetype="application/octet-stream")
+    async with aiohttp.ClientSession() as session:
+        try:
+            while True:
+                async with session.get(FRAME_URL) as resp:
+                    frame = await resp.read()
 
-    except Exception as e:
-        return Response(f"Error: {e}", status=500)
+                    if len(frame) == FRAME_SIZE:
+                        await websocket.send_bytes(frame)
+                    else:
+                        print(f"Invalid frame size: {len(frame)}")
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))
-    app.run(host="0.0.0.0", port=port)
+                await asyncio.sleep(FRAME_INTERVAL)
+
+        except Exception as e:
+            print("Client disconnected:", e)
