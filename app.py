@@ -9,6 +9,10 @@ app = Flask(__name__)
 
 TRONBYT_URL = "https://tronbyt-server-biwe.onrender.com/19cedf89/next"
 
+@app.rout("/")
+def home():
+    return "Proxy server activated"
+
 @app.route("/matrix")
 def matrix():
     try:
